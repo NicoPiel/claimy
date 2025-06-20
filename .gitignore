@@ -22,3 +22,4 @@ target/
 
 # Spacetime ignore
 /.spacetime
+node_modules
