@@ -1,38 +1,107 @@
-import { Card, CardContent } from "client/components/ui/card";
-import { APITester } from "./APITester";
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'sonner';
+import { QueryProvider } from './providers/QueryProvider';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { LoginForm } from './components/auth/LoginForm';
+import { AppLayout } from './components/layout/AppLayout';
+import { LeaderDashboard } from './components/dashboard/LeaderDashboard';
+import { MemberDashboard } from './components/dashboard/MemberDashboard';
+import { useAuthStore } from './stores/authStore';
 import "./index.css";
 
-import logo from "./logo.svg";
-import reactLogo from "./react.svg";
+function AppRoutes() {
+  const { isAuthenticated, user } = useAuthStore();
+
+  if (!isAuthenticated) {
+    return <LoginForm />;
+  }
+
+  return (
+    <AppLayout>
+      <Routes>
+        {/* Default route based on user role */}
+        <Route
+          path="/"
+          element={
+            <Navigate
+              to={user?.role === 'leader' ? '/dashboard' : '/my-tasks'}
+              replace
+            />
+          }
+        />
+
+        {/* Leader routes */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute requiredRole="leader">
+              <LeaderDashboard />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/settlements"
+          element={
+            <ProtectedRoute requiredRole="leader">
+              <div>Settlements Page - Coming Soon</div>
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/tasks"
+          element={
+            <ProtectedRoute requiredRole="leader">
+              <div>Tasks Management Page - Coming Soon</div>
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/players"
+          element={
+            <ProtectedRoute requiredRole="leader">
+              <div>Players Management Page - Coming Soon</div>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Member routes */}
+        <Route
+          path="/my-tasks"
+          element={
+            <ProtectedRoute>
+              <MemberDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Catch all route */}
+        <Route
+          path="*"
+          element={
+            <Navigate
+              to={user?.role === 'leader' ? '/dashboard' : '/my-tasks'}
+              replace
+            />
+          }
+        />
+      </Routes>
+    </AppLayout>
+  );
+}
 
 export function App() {
   return (
-    <div className="container mx-auto p-8 text-center relative z-10">
-      <div className="flex justify-center items-center gap-8 mb-8">
-        <img
-          src={logo}
-          alt="Bun Logo"
-          className="h-36 p-6 transition-all duration-300 hover:drop-shadow-[0_0_2em_#646cffaa] scale-120"
-        />
-        <img
-          src={reactLogo}
-          alt="React Logo"
-          className="h-36 p-6 transition-all duration-300 hover:drop-shadow-[0_0_2em_#61dafbaa] [animation:spin_20s_linear_infinite]"
-        />
-      </div>
-
-      <Card className="bg-card/50 backdrop-blur-sm border-muted">
-        <CardContent className="pt-6">
-          <h1 className="text-5xl font-bold my-4 leading-tight">Bun + React</h1>
-          <p>
-            Edit{" "}
-            <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm">src/App.tsx</code> and
-            save to test HMR
-          </p>
-          <APITester />
-        </CardContent>
-      </Card>
-    </div>
+    <QueryProvider>
+      <Router>
+        <div className="min-h-screen bg-background">
+          <AppRoutes />
+          <Toaster position="top-right" />
+        </div>
+      </Router>
+    </QueryProvider>
   );
 }
 
