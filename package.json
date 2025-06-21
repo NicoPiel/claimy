@@ -6,9 +6,9 @@
   "main": "client/index.tsx",
   "module": "client/index.tsx",
   "scripts": {
-    "dev": "bun --hot client/index.tsx",
-    "start": "NODE_ENV=production bun client/index.tsx",
-    "build": "bun run build.ts"
+    "dev": "cargo build && bun --hot client/index.tsx",
+    "start": "cargo build && NODE_ENV=production bun client/index.tsx",
+    "build": "cargo build && bun run build.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^4.1.3",
