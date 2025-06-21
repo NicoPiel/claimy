@@ -1,34 +1,24 @@
-use spacetimedb::{ReducerContext, Table};
+use spacetimedb::{Identity, ReducerContext, reducer, table};
 
-#[spacetimedb::table(name = person)]
-pub struct Person {
-    name: String
+#[table(name = user, public)]
+pub struct User {
+    #[primary_key]
+    id: Identity,
+    username: Option<String>,
+    password: Option<String>,
+    role: Option<String>,
 }
 
-#[spacetimedb::reducer(init)]
-pub fn init(_ctx: &ReducerContext) {
-    // Called when the module is initially published
-}
-
-#[spacetimedb::reducer(client_connected)]
-pub fn identity_connected(_ctx: &ReducerContext) {
-    // Called everytime a new client connects
-}
-
-#[spacetimedb::reducer(client_disconnected)]
-pub fn identity_disconnected(_ctx: &ReducerContext) {
-    // Called everytime a client disconnects
-}
-
-#[spacetimedb::reducer]
-pub fn add(ctx: &ReducerContext, name: String) {
-    ctx.db.person().insert(Person { name });
-}
-
-#[spacetimedb::reducer]
-pub fn say_hello(ctx: &ReducerContext) {
-    for person in ctx.db.person().iter() {
-        log::info!("Hello, {}!", person.name);
+#[reducer]
+/// Clients invoke this to set their user names.
+pub fn set_name(ctx: &ReducerContext, username: String) -> Result<(), String> {
+    if let Some(user) = ctx.db.user().id().find(ctx.sender) {
+        ctx.db.user().id().update(User {
+            username: Some(username),
+            ..user
+        });
+        Ok(())
+    } else {
+        Err("Could not set name for unknown user".to_string())
     }
-    log::info!("Hello, World!");
 }

@@ -36,6 +36,8 @@ const server = serve({
     // Echo console logs from the browser to the server
     console: true,
   },
+
+  port: 3002
 });
 
 console.log(`🚀 Server running at ${server.url}`);
